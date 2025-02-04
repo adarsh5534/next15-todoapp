@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster"
 import SessionWrapper from "@/components/SessionWrapper";
+import { UserProvider } from "@/context/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +27,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionWrapper> 
+        <UserProvider>
         <Header/>
        <main> {children}</main>
        <Toaster />
+       </UserProvider>
        </SessionWrapper> 
       </body>
     </html>

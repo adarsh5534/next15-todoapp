@@ -14,7 +14,7 @@ export default function NavBar() {
         <Link href={'/'}>  TODOAPP</Link>
       </div>
       {status === "authenticated" ? (
-        <Button variant="outline" onClick={() =>{signOut({callbackUrl: "/login"})} }>
+        <Button onClick={() =>{signOut({callbackUrl: "/login"})} }>
           <LogOutIcon className="mr-2 h-5 w-5" />Logout
         </Button>
       ) : (
