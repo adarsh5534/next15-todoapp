@@ -32,7 +32,7 @@ export default function TaskForm({setOpen}) {
 
     const { toast } = useToast();
     const {state, dispatch} = useUser();
-    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("Work");
     const form = useForm({
         resolver: zodResolver(TaskFormSchema),
         defaultValues: { task: "", description: "", dueDate: "", priority: "medium", category: "Work" },
@@ -53,6 +53,7 @@ export default function TaskForm({setOpen}) {
         const response = await apiRequest("create-task", "POST", updatedData);
         if (response)
             {
+            dispatch({type:'RENDER_TODOLIST', payload: !state.render_list})
             setOpen(false);
             toast({
                 title: "Success!",

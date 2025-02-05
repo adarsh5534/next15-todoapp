@@ -8,15 +8,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import TaskForm from "@/components/TaskForm";
-import { useState } from "react";
-import { useUser } from "@/context/UserContext";
 
-export default function TodoList() {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TaskForm from "@/components/TaskForm";
+import { useEffect, useState } from "react";
+import { useUser } from "@/context/UserContext";
+import { apiRequest } from "../../utils/apiRequest";
+import { Badge } from "@/components/ui/badge";
+import { formatDueDate } from "@/helper/formatDate";
+import TodoList from "@/components/TodoList";
+import ConfirmBox from "@/components/ConfirmationBox";
+
+export default function Home() {
   const {state, dispatch} = useUser();
   const [open, setOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
+  console.log(state._id,'state')
+  
+  useEffect(() => {
+    if (!state?._id) return; // Only proceed if state._id is defined
+  
+    const fetchData = async () => {
+      try {
+        const response = await apiRequest(`get-user-task?id=${state._id}`);
+        console.log(response);
+        setTasks(response);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+  
+    fetchData();
+  }, [state?._id, state?.render_list]); 
+  
+
   return (
     <main className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -35,23 +60,8 @@ export default function TodoList() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
-        {tasks.length === 0 ? (
-          <Card>
-            <CardContent className="flex items-center justify-center h-32 text-gray-500">
-              No tasks created yet. Click "Create New Task" to get started.
-            </CardContent>
-          </Card>
-        ) : (
-          tasks.map((task, index) => (
-            <Card key={index}>
-              <CardContent className="p-4">
-                Task content would go here
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+    <TodoList tasks={tasks} />
+
     </main>
   );
 }

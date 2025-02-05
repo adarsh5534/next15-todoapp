@@ -14,6 +14,8 @@ const userReducer = (state, action) =>
             return { ...state, loading: action.payload }
         case 'UPDATE_USER':
             return { ...state, ...action.payload }
+        case 'RENDER_TODOLIST':
+          return { ...state, render_list:action.payload }
         default:
             return state
     }
@@ -23,7 +25,8 @@ export function  UserProvider ({children}) {
     const { data: session, status } = useSession()
     const [state, dispatch] = useReducer(userReducer, {
         loading: true,
-        userData: null
+        userData: null,
+        render_list:false
       })
     
       useEffect(() => {
