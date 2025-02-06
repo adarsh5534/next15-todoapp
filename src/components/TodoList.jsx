@@ -5,8 +5,18 @@ import { Trash2Icon } from "lucide-react";
 import ConfirmBox from "./ConfirmationBox";
 import { useState } from "react";
 import { apiRequest } from "../../utils/apiRequest";
+import { useUser } from "@/context/UserContext";
+import { useToast } from "@/hooks/use-toast";
+import TaskDialog from "./TaskDialog";
 
-export default function TodoList({ tasks, onTasksUpdate }) {
+export default function TodoList({ tasks }) {
+      const {state, dispatch} = useUser();
+      const {toast} = useToast();
+      const [open, setOpen] = useState(false);
+      const [task, setTask] = useState([]);
+      
+
+    console.log(state,'ooooooooooo')
   const [confirmationState, setConfirmationState] = useState({
     isOpen: false,
     taskId: null,
@@ -30,7 +40,12 @@ export default function TodoList({ tasks, onTasksUpdate }) {
       const response = await apiRequest(`deleteTask?id=${confirmationState.taskId}`, "POST");
       
       if (response.message) {
-        onTasksUpdate?.(tasks.filter(task => task._id !== confirmationState.taskId));
+        dispatch({type:'RENDER_TODOLIST', payload: !state.render_list})
+        toast({
+            title: "Success!",
+            description: response?.message,
+            variant: "success",
+        });
       } else {
         throw new Error(response.error || 'Failed to delete task');
       }
@@ -66,6 +81,10 @@ export default function TodoList({ tasks, onTasksUpdate }) {
           <Card
             key={task._id}
             className="flex items-center p-4 shadow-md rounded-lg border border-gray-200"
+            onClick={() => {
+                setOpen(true);
+                setTask(task);
+            }}
           >
             <div
               className={`w-4 h-4 rounded-full ${
@@ -87,7 +106,7 @@ export default function TodoList({ tasks, onTasksUpdate }) {
             </Badge>
             <Trash2Icon 
               className="hover:opacity-70 cursor-pointer" 
-              onClick={() => handleDeleteClick(task._id)}
+              onClick={(e) => {e.stopPropagation(); handleDeleteClick(task._id);}}
             />
           </Card>
         ))
@@ -101,6 +120,8 @@ export default function TodoList({ tasks, onTasksUpdate }) {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+       <TaskDialog open={open} setOpen={setOpen} taskData={task} title="Update Task" triggerLabel="Update Task" />
+      
     </div>
   );
 }

@@ -1,67 +1,87 @@
-import
-    {
-        Select,
-        SelectContent,
-        SelectItem,
-        SelectTrigger,
-        SelectValue,
-    } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "./ui/button";
-import
-    {
-        Form,
-        FormControl,
-        FormDescription,
-        FormField,
-        FormItem,
-        FormLabel,
-        FormMessage,
-    } from "@/components/ui/form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TaskFormSchema } from "../../zodSchema/TaskFormSchema";
 import { apiRequest } from "../../utils/apiRequest";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 
-export default function TaskForm({setOpen}) {
-
+export default function TaskForm({ setOpen, taskData }) {
     const { toast } = useToast();
-    const {state, dispatch} = useUser();
-    const [selectedCategory, setSelectedCategory] = useState("Work");
+    const { state, dispatch } = useUser();
+    const [selectedCategory, setSelectedCategory] = useState(taskData?.category || "Work");
+    console.log(taskData,'taskdata')
+    // Initialize form with empty strings instead of undefined values
+    
     const form = useForm({
         resolver: zodResolver(TaskFormSchema),
-        defaultValues: { task: "", description: "", dueDate: "", priority: "medium", category: "Work" },
+        defaultValues: {
+            task: taskData?.task || "",
+            description: taskData?.description || "",
+            dueDate: taskData?.dueDate || "",
+            priority: taskData?.priority || "medium",
+            category: taskData?.category || "Work"
+        },
+        shouldUnregister: true,
     });
 
-    const onSubmit = async (data) =>
-    {
-        console.log(data);
-        if (!data)
-        {
+    useEffect(() => {
+        if (taskData) {
+            const formattedDueDate = taskData.dueDate 
+            ? new Date(taskData.dueDate).toISOString().slice(0, 16) // Convert to proper format
+            : "";
+            const formattedData = {
+                task: taskData.task || "",
+                description: taskData.description || "",
+                dueDate:formattedDueDate || "",
+                priority: taskData.priority || "medium",
+                category: taskData.category || "Work"
+            };
+            form.reset(formattedData);
+            setSelectedCategory(taskData.category || "Work");
+        }
+    }, [taskData, form]);
+
+    const onSubmit = async (data) => {
+        if (!data) {
             return toast({
-                title: "Falied",
-                description: "",
+                title: "Failed",
+                description: "Form data is missing",
                 variant: "destructive",
             });
         }
-        const updatedData = { ...data, category: selectedCategory, userId:state._id }
-        const response = await apiRequest("create-task", "POST", updatedData);
-        if (response)
-            {
-            dispatch({type:'RENDER_TODOLIST', payload: !state.render_list})
+        const updatedData = { ...data, category: selectedCategory, userId: state._id };
+        const endpoint = taskData ? `updateTask?id=${taskData._id}`: "create-task";
+
+        const response = await apiRequest(endpoint, "POST", updatedData);
+        if (response) {
+            dispatch({ type: 'RENDER_TODOLIST', payload: !state.render_list });
             setOpen(false);
             toast({
                 title: "Success!",
                 description: response?.message,
                 variant: "success",
             });
-        } else
-        {
+        } else {
             toast({
                 title: "Failed!",
                 description: response?.error,
@@ -73,57 +93,76 @@ export default function TaskForm({setOpen}) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-
-                {/* Task Title */}
                 <FormField
+                    control={form.control}
                     name="task"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel htmlFor="task">Task Title</FormLabel>
                             <FormControl>
-                                <Input {...field} id="task" placeholder="Enter task title..." />
+                                <Input 
+                                    {...field}
+                                    id="task"
+                                    placeholder="Enter task title..."
+                                    value={field.value || ""} 
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                {/* Description */}
                 <FormField
+                    control={form.control}
                     name="description"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel htmlFor="description">Description</FormLabel>
                             <FormControl>
-                                <Textarea {...field} id="description" placeholder="Add description..." className="h-24" />
+                                <Textarea 
+                                    {...field}
+                                    id="description"
+                                    placeholder="Add description..."
+                                    className="h-24"
+                                    value={field.value || ""} 
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                {/* Due Date */}
                 <FormField
+                    control={form.control}
                     name="dueDate"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel htmlFor="dueDate">Due Date</FormLabel>
                             <FormControl>
-                                <Input {...field} id="dueDate" type="datetime-local" />
+                                <Input 
+                                    {...field}
+                                    id="dueDate"
+                                    type="datetime-local"
+                                    value={field.value || ""} 
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                {/* Priority */}
                 <FormField
+                    control={form.control}
                     name="priority"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel htmlFor="priority">Priority</FormLabel>
                             <FormControl>
-                                <Select {...field} id="priority">
+                                <Select 
+                                    value={field.value || "medium"}
+                                    onValueChange={field.onChange}
+                                    id="priority"
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select priority" />
                                     </SelectTrigger>
@@ -139,7 +178,6 @@ export default function TaskForm({setOpen}) {
                     )}
                 />
 
-                {/* Category */}
                 <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
@@ -148,8 +186,11 @@ export default function TaskForm({setOpen}) {
                                 <Badge
                                     key={category}
                                     onClick={() => setSelectedCategory(category)}
-                                    className={`cursor-pointer px-4 py-2 ${selectedCategory === category ? "bg-primary text-white" : "bg-gray-500"
-                                        }`}
+                                    className={`cursor-pointer px-4 py-2 ${
+                                        selectedCategory === category 
+                                            ? "bg-primary text-white" 
+                                            : "bg-gray-500"
+                                    }`}
                                 >
                                     {category}
                                 </Badge>
@@ -158,7 +199,9 @@ export default function TaskForm({setOpen}) {
                     </FormControl>
                 </FormItem>
 
-                <Button className="w-full">Create Task</Button>
+                <Button className="w-full">
+                    {taskData ? "Update Task" : "Create Task"}
+                </Button>
             </form>
         </Form>
     );
