@@ -1,3 +1,4 @@
+'use client';
 import CustomPagination from '@/components/CustomPagination';
 import React, { useState } from 'react';
 
