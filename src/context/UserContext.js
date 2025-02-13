@@ -16,6 +16,12 @@ const userReducer = (state, action) =>
             return { ...state, ...action.payload }
         case 'RENDER_TODOLIST':
           return { ...state, render_list:action.payload }
+        case 'PAGE':
+          return { ...state, page:action.payload }
+        case 'USER_TASK_DATA':
+          return { ...state, task_list:action.payload }
+        case 'CATEGORY':
+          return { ...state, category:action.payload }
         default:
             return state
     }
@@ -26,7 +32,10 @@ export function  UserProvider ({children}) {
     const [state, dispatch] = useReducer(userReducer, {
         loading: true,
         userData: null,
-        render_list:false
+        render_list:false,
+        page:1,
+        task_list:null,
+        category: ''
       })
     
       useEffect(() => {

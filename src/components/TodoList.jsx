@@ -8,13 +8,16 @@ import { apiRequest } from "../../utils/apiRequest";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import TaskDialog from "./TaskDialog";
+import CustomPagination from "./CustomPagination";
 
-export default function TodoList({ tasks }) {
-      const {state, dispatch} = useUser();
-      const {toast} = useToast();
-      const [open, setOpen] = useState(false);
-      const [task, setTask] = useState([]);
-      
+export default function TodoList({ tasks })
+{
+  const { state, dispatch } = useUser();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [task, setTask] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
 
     console.log(state,'ooooooooooo')
   const [confirmationState, setConfirmationState] = useState({
@@ -67,7 +70,6 @@ export default function TodoList({ tasks }) {
       isDeleting: false
     });
   };
-
   return (
     <div className="grid gap-4">
       {tasks.length === 0 ? (
@@ -77,7 +79,7 @@ export default function TodoList({ tasks }) {
           </CardContent>
         </Card>
       ) : (
-        tasks.map((task) => (
+        tasks?.map((task) => (
           <Card
             key={task._id}
             className="flex items-center p-4 shadow-md rounded-lg border border-gray-200"
@@ -111,7 +113,12 @@ export default function TodoList({ tasks }) {
           </Card>
         ))
       )}
-      
+      <CustomPagination
+          currentPage={currentPage}
+          totalPages={state?.task_list?.pagination?.totalPages}
+          maxVisible={5}
+          onPageChange={setCurrentPage}
+        />   
       <ConfirmBox
         open={confirmationState.isOpen}
         setOpen={(isOpen) => setConfirmationState(prev => ({ ...prev, isOpen }))}
