@@ -73,16 +73,26 @@ export async function GET(req) {
     ]);
 
     // Return paginated response
-    return NextResponse.json({
-      success: true,
-      data: userTasks,
-      pagination: {
-        total: totalCount,
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        limit
+    return NextResponse.json(
+      {
+        success: true,
+        data: userTasks,
+        pagination: {
+          total: totalCount,
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit),
+          limit,
+        },
+      },
+      {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*", // Change to specific frontend URL in production
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
       }
-    });
+    );
 
   } catch (error) {
     console.error("Error in GET /todos:", error);
