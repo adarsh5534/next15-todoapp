@@ -84,14 +84,6 @@ export async function GET(req) {
           limit,
         },
       },
-      {
-        status: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "https://next15-todoapp-i6hixbrtp-adarsh-ipes-projects.vercel.app/api", // Change to specific frontend URL in production
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        },
-      }
     );
 
   } catch (error) {
